@@ -1,21 +1,12 @@
 from ultralytics import YOLO
 import cv2
 
-def real_time_card_detection(model_path, video_path, output_video_path):
+def real_time_card_detection(model_path):
     # Загрузка модели
     model = YOLO(model_path)
 
-    # Инициализация захвата видео из файла
-    cap = cv2.VideoCapture(video_path)
-
-    # Получение параметров видео для записи
-    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
-
-    # Инициализация VideoWriter для сохранения видео
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Кодек для MP4
-    out = cv2.VideoWriter(output_video_path, fourcc, fps, (frame_width, frame_height))
+    # Инициализация захвата видео с веб-камеры
+    cap = cv2.VideoCapture(0)  # 0 для встроенной камеры
 
     while cap.isOpened():
         # Захват кадра
@@ -25,6 +16,9 @@ def real_time_card_detection(model_path, video_path, output_video_path):
 
         # Предсказание на кадре
         results = model(frame)
+
+        # Список для хранения обнаруженных карт
+        detected_cards = set()
 
         # Визуализация результатов
         for result in results:
@@ -36,8 +30,13 @@ def real_time_card_detection(model_path, video_path, output_video_path):
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-        # Запись кадра в выходной видеофайл
-        out.write(frame)
+                # Добавление карты в список
+                detected_cards.add(model.names[int(cls)])
+
+        # Отображение списка карт в правом нижнем углу
+        card_list_text = ", ".join(detected_cards)
+        cv2.putText(frame, f"Cards in hand: {card_list_text}", (10, frame.shape[0] - 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
         # Показать кадр
         cv2.imshow('Real-time Card Detection', frame)
@@ -48,10 +47,8 @@ def real_time_card_detection(model_path, video_path, output_video_path):
 
     # Освобождение ресурсов
     cap.release()
-    out.release()
     cv2.destroyAllWindows()
+
 if __name__ == '__main__':
     model_path = 'trained_model.pt'  # путь к вашей обученной модели
-    video_path = 'video_2025-05-12_19-54-09.mp4'  # путь к вашему видеофайлу
-    output_video_path = 'predictions/output_video.mp4'  # путь для сохранения обработанного видео
-    real_time_card_detection(model_path, video_path, output_video_path)
+    real_time_card_detection(model_path)
