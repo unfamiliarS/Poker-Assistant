@@ -1,9 +1,9 @@
 from ultralytics import YOLO
 import cv2
-from ..utils.card_sorter import CardSorter
-from ..utils.poker_hand_evaluator import PokerHandEvaluator
-from ..utils.card_history_manager import CardHistoryManager
-from ..utils.card_image_loader import CardImageLoader
+from utils.card_sorter import CardSorter
+from utils.poker_hand_evaluator import PokerHandEvaluator
+from utils.card_history_manager import CardHistoryManager
+from utils.card_image_loader import CardImageLoader
 
 class PokerAssistant:
     """Основной класс покерного ассистента"""
